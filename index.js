@@ -1,54 +1,54 @@
-import express from 'express'
+import mysql from "mysql2/promise";
+import {config} from "dotenv";
+config();
 
-// initialised/created project
-const app = express()
-const PORT = process.env.PORT || 3000
-
-// return information
-app.get('/employees', (req,res)=>{
-    res.json({
-        message:"This is the GET employees path"
-    })
-})
-app.get('/managers', (req,res)=>{
-    res.json({
-        message:"This is the GET managers path"
-    })
-})
-app.post('/employees', (req,res)=>{
-    res.json({
-        message:"This is the POST employees path and you added something"
-    })
-})
-app.post('/managers', (req,res)=>{
-    res.json({
-        message:"This is the POST managers path and you added something"
-    })
-})
-app.patch('/employees', (req,res)=>{
-    res.json({
-        message:"This is the PUT employees path and you updated something"
-    })
-})
-app.patch('/managers', (req,res)=>{
-    res.json({
-        message:"This is the PUT managers path and you updated something"
-    })
-})
-app.delete('/employees', (req,res)=>{
-    res.json({
-        message:"This is the DELETE employees path and you deleted something"
-    })
-})
-app.delete('/managers', (req,res)=>{
-    res.json({
-        message:"This is the DELETE managers path and you deleted something"
-    })
-})
+const pool = mysql.createPool({
+    hostname:process.env.HOSTNAME,
+    user:process.env.USER,
+    password:process.env.PASSWORD,
+    database:process.env.DATABASE 
+});
 
 
+const getAllUsers = async () => {
+    const [rows] = await pool.query("SELECT * FROM users");
+    return rows;
+}
 
-// allows project to be an API
-app.listen(PORT, ()=> {
-    console.log('http://localhost:'+PORT);
-})
+console.log(await getAllUsers());
+
+
+const getAllProducts = async () => {
+    const [rows] = await pool.query("SELECT * FROM products");
+    return rows;
+}
+
+console.log(await getAllProducts());
+
+
+const deleteProduct = async () => {
+    const [rows] = await pool.query("DELETE FROM products WHERE product_code = 'baro1'");
+    return rows;
+}
+
+console.log(await deleteProduct());
+
+
+const insertProduct = async () => {
+    const [rows] = await pool.query("INSERT INTO products (product_code, product_name, product_price, product_quantity) VALUES ('baro1', 'baro', '10.00', '10')");
+    return rows;
+}
+
+console.log(await insertProduct());
+
+
+const updateProduct = async () => {
+    const [rows] = await pool.query("UPDATE products SET product_price = '20.00' WHERE product_code = 'baro1'");
+    return rows;
+}
+
+console.log(await updateProduct());
+
+
+
+
