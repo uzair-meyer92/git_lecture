@@ -1,53 +1,67 @@
-import mysql from "mysql2/promise";
-import {config} from "dotenv";
-config();
+import mysql from 'mysql2/promise';
+import express from 'express';
+import { config } from 'dotenv';
+
+config(); 
 
 const pool = mysql.createPool({
-    hostname:process.env.HOSTNAME,
-    user:process.env.USER,
-    password:process.env.PASSWORD,
-    database:process.env.DATABASE 
+    host: process.env.DB_HOSTNAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
 });
 
+const app = express();
+app.use(express.json());
 
-const getAllUsers = async () => {
-    const [rows] = await pool.query("SELECT * FROM users");
-    return rows;
-}
+app.listen(3030, () => {
+    console.log('http://localhost:3030');
+});
 
-console.log(await getAllUsers());
+// Function to get all employees
+const getEmployees = async () => {
+    let [data] = await pool.query("SELECT * FROM employees");
+    return data;
+};
 
-
-const getAllProducts = async () => {
-    const [rows] = await pool.query("SELECT * FROM products");
-    return rows;
-}
-
-console.log(await getAllProducts());
-
-
-const deleteProduct = async () => {
-    const [rows] = await pool.query("DELETE FROM products WHERE product_code = 'baro1'");
-    return rows;
-}
-
-console.log(await deleteProduct());
+console.log(await getEmployees());
 
 
-const insertProduct = async () => {
-    const [rows] = await pool.query("INSERT INTO products (product_code, product_name, product_price, product_quantity) VALUES ('baro1', 'baro', '10.00', '10')");
-    return rows;
-}
+// Function to get a single employee by ID
+const getEmployee = async (id) => {
+    const [data] = await pool.query("SELECT * FROM employees WHERE id = ?", [id]);
+    return data;
+};
 
-console.log(await insertProduct());
+console.log(await getEmployee(1));
+
+// Function to add a new employee
+const addEmployee = async (name, salary, department_id) => {
+    await pool.query("INSERT INTO employees (name, salary, department_id) VALUES (?, ?, ?)", [name, salary, department_id]);
+    return await getEmployees(); // Return all employees after adding the new one
+};
+
+console.log(await addEmployee('John Doe', 50000, 1));
+
+// Function to remove an employee by ID
+const removeEmployee = async (id) => {
+    await pool.query("DELETE FROM employees WHERE id = ?", [id]);
+    return await getEmployees(); // Return all employees after removing the employee
+};
+
+console.log(await removeEmployee(1));
+
+// Function to update an employee's details
+const updateEmployee = async (id, name, salary, department_id) => {
+    await pool.query("UPDATE employees SET name = ?, salary = ?, department_id = ? WHERE id = ?", [name, salary, department_id, id]);
+    return await getEmployee(id); // Return the updated employee data
+};
+
+console.log(await updateEmployee(1, 'John Doe', 60000, 1));
 
 
-const updateProduct = async () => {
-    const [rows] = await pool.query("UPDATE products SET product_price = '20.00' WHERE product_code = 'baro1'");
-    return rows;
-}
 
-console.log(await updateProduct());
+
 
 
 
